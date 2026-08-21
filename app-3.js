@@ -38,24 +38,24 @@
   // a tiny neural network rather than a fixed list of moves.
   const SIGHT_DISTANCE = 8;
   const SIGHT_DIRS = [
-    { x: 0, y: -1 },  // N
-    { x: 1, y: -1 },  // NE
-    { x: 1, y: 0 },   // E
-    { x: 1, y: 1 },   // SE
-    { x: 0, y: 1 },   // S
-    { x: -1, y: 1 },  // SW
-    { x: -1, y: 0 },  // W
-    { x: -1, y: -1 }  // NW
+    { x: 0, y: -1 },
+    { x: 1, y: -1 },
+    { x: 1, y: 0 },
+    { x: 1, y: 1 },
+    { x: 0, y: 1 },
+    { x: -1, y: 1 },
+    { x: -1, y: 0 },
+    { x: -1, y: -1 }
   ];
   const BRAIN_INPUTS = 45;
   const BRAIN_HIDDEN = 12;
   const BRAIN_OUTPUTS = 4;
   const BRAIN_WEIGHTS = (BRAIN_INPUTS + 1) * BRAIN_HIDDEN + (BRAIN_HIDDEN + 1) * BRAIN_OUTPUTS;
   const RECENT_MEMORY_STEPS = 10;
+  const PATH_MEMORY_STEPS = 12;
+  const AXIS_OSCILLATION_WINDOW = 4;
 
   function stagnationLimit() {
-    // Enough room for a useful detour/backtrack, but not hundreds of moves spent
-    // oscillating between already-known cells. Larger mazes get a little more patience.
     return Math.max(48, Math.min(120, Math.round(42 + state.startDistance * 0.18)));
   }
 
@@ -85,6 +85,8 @@
       cheeses: new Set(),
       visited: new Set([startKey]),
       lastVisitStep: new Map([[startKey, 0]]),
+      pathHistory: [startKey],
+      dirHistory: [],
       bestDistance: state.startDistance,
       currentDistance: state.startDistance,
       lastDir: -1,
@@ -201,30 +203,22 @@
   function brainInputs(mouse) {
     const inputs = [];
 
-    // 32 values: wall, danger, cheese and goal proximity along each of eight rays.
     for (const direction of SIGHT_DIRS) inputs.push(...senseRay(mouse, direction));
 
-    // Loose goal bearing: direction only, deliberately no direct distance.
     const dx = state.goal.x - mouse.x;
     const dy = state.goal.y - mouse.y;
     const bearingScale = Math.max(1, Math.abs(dx), Math.abs(dy));
     inputs.push(dx / bearingScale, dy / bearingScale);
 
-    // The mouse can feel how far around the safe route it currently is.
     inputs.push(currentProgressOf(mouse));
 
-    // Tiny memory: previous direction and whether the previous action hit a wall.
     for (let d = 0; d < 4; d++) inputs.push(mouse.lastDir === d ? 1 : 0);
     inputs.push(mouse.lastWallHit ? 1 : 0);
 
-    // Short-term spatial memory for each adjacent cell. 1 means "I was just there",
-    // fading toward 0 over ten moves. This replaces the old lifetime visited/not-visited
-    // flag so the brain can distinguish a useful return journey from immediate dithering.
     for (const d of DIRS) {
       inputs.push(recentnessOf(mouse, mouse.x + d.x, mouse.y + d.y));
     }
 
-    // Restlessness rises when the mouse keeps revisiting old ground without achieving anything.
     inputs.push(Math.min(1, mouse.staleSteps / stagnationLimit()));
 
     return inputs;
@@ -245,6 +239,68 @@
     return mouse.x + d.x === mouse.previousX && mouse.y + d.y === mouse.previousY;
   }
 
+  function targetKey(mouse, dir) {
+    const d = DIRS[dir];
+    return cellKey(mouse.x + d.x, mouse.y + d.y);
+  }
+
+  function axisOfDir(dir) {
+    return dir === 0 || dir === 2 ? 'vertical' : 'horizontal';
+  }
+
+  function isValuableImmediateTarget(mouse, dir) {
+    const d = DIRS[dir];
+    const x = mouse.x + d.x;
+    const y = mouse.y + d.y;
+    if (!inBounds(x, y)) return false;
+    if (state.goal && x === state.goal.x && y === state.goal.y) return true;
+    if (getCell(x, y) === CELL.CHEESE && !mouse.cheeses.has(cellKey(x, y))) return true;
+    return false;
+  }
+
+  function wouldCompleteShortRetrace(mouse, dir) {
+    // Detect A→B→C→B→A. The path must have A,B,C,B as its last four
+    // successful positions and the proposed next square is A.
+    const h = mouse.pathHistory;
+    if (h.length < 4) return false;
+    const target = targetKey(mouse, dir);
+    return h[h.length - 4] === target && h[h.length - 3] === h[h.length - 1];
+  }
+
+  function wouldContinueAxisOscillation(mouse, dir) {
+    // Look at the proposed move plus the previous three successful moves.
+    // If all four are on one axis and include both directions, the mouse is
+    // shuttling left/right or up/down rather than making a purposeful straight run.
+    const prospective = mouse.dirHistory.slice(-(AXIS_OSCILLATION_WINDOW - 1));
+    prospective.push(dir);
+    if (prospective.length < AXIS_OSCILLATION_WINDOW) return false;
+    const axis = axisOfDir(dir);
+    if (!prospective.every(d => axisOfDir(d) === axis)) return false;
+    return new Set(prospective).size > 1;
+  }
+
+  function bestSafeAlternative(mouse, outputs, excludedDir, requirePerpendicular = false) {
+    const excludedAxis = axisOfDir(excludedDir);
+    let alternative = -1;
+    let alternativeScore = -Infinity;
+
+    for (let o = 0; o < BRAIN_OUTPUTS; o++) {
+      if (o === excludedDir || !isSafeMove(mouse, o)) continue;
+      if (requirePerpendicular && axisOfDir(o) === excludedAxis) continue;
+
+      const d = DIRS[o];
+      const recency = recentnessOf(mouse, mouse.x + d.x, mouse.y + d.y);
+      // Preserve the evolved preference but give genuinely less-recent ground a
+      // modest advantage when the controller has decided it must break a loop.
+      const score = outputs[o] + (1 - recency) * 0.7;
+      if (score > alternativeScore) {
+        alternativeScore = score;
+        alternative = o;
+      }
+    }
+    return alternative;
+  }
+
   function decideMove(mouse) {
     const inputs = brainInputs(mouse);
     const hidden = new Float32Array(BRAIN_HIDDEN);
@@ -255,14 +311,14 @@
     for (let h = 0; h < BRAIN_HIDDEN; h++) {
       let sum = 0;
       for (let i = 0; i < BRAIN_INPUTS; i++) sum += inputs[i] * g[wi++];
-      sum += g[wi++]; // bias
+      sum += g[wi++];
       hidden[h] = Math.tanh(sum);
     }
 
     for (let o = 0; o < BRAIN_OUTPUTS; o++) {
       let sum = 0;
       for (let h = 0; h < BRAIN_HIDDEN; h++) sum += hidden[h] * g[wi++];
-      outputs[o] = sum + g[wi++]; // bias
+      outputs[o] = sum + g[wi++];
     }
 
     let bestDir = 0;
@@ -270,15 +326,23 @@
       if (outputs[o] > outputs[bestDir]) bestDir = o;
     }
 
-    // One immediate reversal is allowed: mice must be able to change their mind or
-    // back out of a cul-de-sac. But A→B→A→B vibration is blocked whenever another
-    // safe move exists. In a narrow corridor/dead end, reversing remains unrestricted.
-    if (mouse.reverseStreak > 0 && isImmediateReverse(mouse, bestDir)) {
+    // A→B→A is permitted once, because real backtracking matters. Repeated
+    // immediate reversal is redirected when another safe option exists.
+    if (mouse.reverseStreak > 0 && isImmediateReverse(mouse, bestDir) && !isValuableImmediateTarget(mouse, bestDir)) {
+      const alternative = bestSafeAlternative(mouse, outputs, bestDir, false);
+      if (alternative >= 0) bestDir = alternative;
+    }
+
+    // Broader anti-vibration rule: catch A→B→C→B→A and sustained horizontal/
+    // vertical shuttling. If a perpendicular safe turn exists during axis
+    // oscillation, take the brain's favourite turn. This never forces a turn in
+    // a corridor, dead end, or when the proposed square is goal/new cheese.
+    const shortRetrace = wouldCompleteShortRetrace(mouse, bestDir);
+    const axisOscillation = wouldContinueAxisOscillation(mouse, bestDir);
+    if ((shortRetrace || axisOscillation) && !isValuableImmediateTarget(mouse, bestDir)) {
       let alternative = -1;
-      for (let o = 0; o < BRAIN_OUTPUTS; o++) {
-        if (isImmediateReverse(mouse, o) || !isSafeMove(mouse, o)) continue;
-        if (alternative < 0 || outputs[o] > outputs[alternative]) alternative = o;
-      }
+      if (axisOscillation) alternative = bestSafeAlternative(mouse, outputs, bestDir, true);
+      if (alternative < 0) alternative = bestSafeAlternative(mouse, outputs, bestDir, false);
       if (alternative >= 0) bestDir = alternative;
     }
 
@@ -328,6 +392,10 @@
     mouse.y = ny;
     mouse.visited.add(key);
     mouse.lastVisitStep.set(key, mouse.step);
+    mouse.pathHistory.push(key);
+    if (mouse.pathHistory.length > PATH_MEMORY_STEPS) mouse.pathHistory.shift();
+    mouse.dirHistory.push(gene);
+    if (mouse.dirHistory.length > PATH_MEMORY_STEPS) mouse.dirHistory.shift();
     const type = getCell(nx, ny);
 
     if (type === CELL.DANGER) {
