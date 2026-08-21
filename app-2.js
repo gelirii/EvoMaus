@@ -1,8 +1,23 @@
+  const toolHelp = document.getElementById('toolHelp');
+  const TOOL_HELP = Object.freeze({
+    wall: 'Tap or drag to place walls.',
+    cheese: 'Place cheese to reward useful routes.',
+    danger: 'Danger kills mice instantly.',
+    goal: 'Place the finish. Only one goal can exist.',
+    eraser: 'Tap or drag to erase blocks.'
+  });
+
+  function updateToolHelp(message = null) {
+    if (!toolHelp) return;
+    toolHelp.textContent = message || TOOL_HELP[state.tool] || '';
+  }
+
   function activateSinglePointer(pointer) {
     if (!pointer || state.mode !== 'edit' || state.pointers.size > 1) return;
     state.lastPaintKey = null;
     if (isPointerOnStart(pointer)) {
       state.draggingStart = true;
+      updateToolHelp('Drag the mouse to move the start point.');
       relocateStart(pointer);
     } else {
       state.drawing = true;
@@ -76,6 +91,7 @@
       state.drawing = false;
       state.draggingStart = false;
       state.lastPaintKey = null;
+      updateToolHelp();
     }
   }
   canvas.addEventListener('pointerup', endPointer);
@@ -100,6 +116,7 @@
     btn.addEventListener('click', () => {
       state.tool = btn.dataset.tool;
       toolButtons.forEach(b => b.classList.toggle('active', b === btn));
+      updateToolHelp();
     });
   });
 
@@ -118,3 +135,4 @@
   });
 
   homeButton.addEventListener('click', centreOnStart);
+  updateToolHelp();
