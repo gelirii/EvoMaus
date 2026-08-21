@@ -20,6 +20,7 @@
   const populationInput = document.getElementById('population');
   const populationValue = document.getElementById('populationValue');
   const startButton = document.getElementById('startButton');
+  const stopEditButton = document.getElementById('stopEditButton');
   const pauseButton = document.getElementById('pauseButton');
   const speedButton = document.getElementById('speedButton');
   const editButton = document.getElementById('editButton');
@@ -30,7 +31,6 @@
   const aliveStat = document.getElementById('aliveStat');
   const progressStat = document.getElementById('progressStat');
   const cheeseStat = document.getElementById('cheeseStat');
-  const wallStat = document.getElementById('wallStat');
 
   const state = {
     mode: 'edit',
@@ -51,6 +51,7 @@
     maxSteps: 500,
     generation: 1,
     mice: [],
+    suspendedRun: null,
     paused: false,
     speedIndex: 0,
     speeds: [1, 2, 4, 8],
