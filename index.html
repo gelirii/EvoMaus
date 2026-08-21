@@ -7,14 +7,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>EvoMaus</title>
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div class="titleRow">
         <div class="brand"><strong>EvoMaus</strong><span class="version">v1</span></div>
-        <button id="startButton" class="primary">▶ Start</button>
+        <div class="editorTitleActions">
+          <button id="startButton" class="primary">▶ Start</button>
+          <button id="stopEditButton" class="dangerButton">■ Stop</button>
+        </div>
       </div>
 
       <div class="editorControls" aria-label="Maze editor controls">
@@ -35,7 +38,7 @@
         <button id="pauseButton" class="secondary">⏸ Pause</button>
         <button id="speedButton" class="secondary">1× Speed</button>
         <button id="editButton" class="secondary">✎ Edit</button>
-        <button id="resetEvolutionButton" class="dangerButton">↺ Reset</button>
+        <button id="resetEvolutionButton" class="dangerButton">■ Stop</button>
       </div>
 
       <div class="simControls" aria-label="Evolution stats">
@@ -43,7 +46,6 @@
         <div class="statChip"><span>Alive</span><strong id="aliveStat">0/0</strong></div>
         <div class="statChip"><span>Best progress</span><strong id="progressStat">0%</strong></div>
         <div class="statChip"><span>Cheese</span><strong id="cheeseStat">0</strong></div>
-        <div class="statChip"><span>Wall hits</span><strong id="wallStat">0</strong></div>
       </div>
     </header>
 
@@ -58,10 +60,10 @@
     </main>
   </div>
 
-  <script src="app-1.js?v=4" defer></script>
-  <script src="app-2.js?v=4" defer></script>
-  <script src="app-3.js?v=4" defer></script>
-  <script src="app-4.js?v=4" defer></script>
-  <script src="app-5.js?v=4" defer></script>
+  <script src="app-1.js?v=5" defer></script>
+  <script src="app-2.js?v=5" defer></script>
+  <script src="app-3.js?v=5" defer></script>
+  <script src="app-4.js?v=5" defer></script>
+  <script src="app-5.js?v=5" defer></script>
 </body>
 </html>
