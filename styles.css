@@ -61,7 +61,7 @@ button, input { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   min-height: 38px;
 }
 
@@ -74,6 +74,14 @@ button, input { font: inherit; }
 }
 .brand strong { font-size: 22px; letter-spacing: -.55px; }
 .version { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+.editorTitleActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
 
 .editorControls, .simControls {
   width: 100%;
@@ -131,6 +139,7 @@ button, input { font: inherit; }
   font-weight: 800;
 }
 .populationBox input { width: 100%; min-width: 70px; accent-color: var(--accent); }
+.populationBox:has(input:disabled) { opacity: .55; }
 #populationValue {
   color: var(--accent);
   min-width: 38px;
@@ -152,7 +161,15 @@ button, input { font: inherit; }
   flex: 0 0 auto;
 }
 .primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 5px 16px rgba(133,224,197,.18); }
-#startButton { min-width: 104px; height: 38px; padding: 0 17px; font-size: 14px; }
+#startButton { min-width: 104px; height: 38px; padding: 0 14px; font-size: 14px; }
+#stopEditButton {
+  display: none;
+  min-width: 68px;
+  height: 38px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+body.editing-run #stopEditButton { display: block; }
 .secondary { background: var(--button); color: var(--text); border: 1px solid var(--line); }
 .dangerButton { background: rgba(238,90,95,.17); color: #ffafb2; border: 1px solid rgba(238,90,95,.38); }
 button:active { transform: translateY(1px) scale(.99); }
@@ -180,6 +197,7 @@ body.simulating .editorControls { display: none; }
 body.simulating .simActionBar { display: grid; }
 body.simulating .simControls { display: flex; }
 body.simulating #startButton { display: none; }
+body.simulating #stopEditButton { display: none; }
 
 .statChip {
   flex: 0 0 auto;
@@ -297,6 +315,10 @@ body.simulating .mouseNote { display: none; }
 @media (max-width: 360px) {
   .simActionBar button { font-size: 10px; padding: 0 3px; }
   body.simulating .brand strong { font-size: 18px; }
+  body.editing-run .brand strong { font-size: 18px; }
+  body.editing-run .version { display: none; }
+  #startButton { min-width: 96px; padding: 0 10px; font-size: 13px; }
+  #stopEditButton { min-width: 62px; padding: 0 7px; }
 }
 
 @media (min-width: 700px) {
