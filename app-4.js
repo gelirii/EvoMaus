@@ -14,7 +14,6 @@
   }
 
   function selectParent(pool) {
-    // Rank-weighted selection: the best mouse is much more likely, but diversity survives.
     const total = pool.length * (pool.length + 1) / 2;
     let r = Math.random() * total;
     for (let i = 0; i < pool.length; i++) {
@@ -76,12 +75,10 @@
     const next = [];
     const nextGeneration = state.generation + 1;
 
-    // Preserve a tiny elite set exactly. Mouse #1 is the previous champion's direct clone.
     for (let i = 0; i < eliteCount && i < ranked.length; i++) {
       next.push(makeMouse(ranked[i].genome.slice(), nextGeneration, [ranked[i].id]));
     }
 
-    // Fresh random mice keep the gene pool from collapsing into one mediocre lineage.
     for (let i = 0; i < immigrantCount && next.length < state.populationSize; i++) {
       next.push(makeMouse(randomGenome(state.maxSteps), nextGeneration));
     }
@@ -134,6 +131,7 @@
     state.mode = 'sim';
     state.paused = false;
     pauseButton.textContent = '⏸ Pause';
+    speedButton.textContent = `${state.speeds[state.speedIndex]}× Speed`;
     document.body.classList.add('simulating');
     document.body.classList.remove('paused');
     initialiseGenerationOne();
@@ -171,11 +169,11 @@
     state.paused = !state.paused;
     pauseButton.textContent = state.paused ? '▶ Resume' : '⏸ Pause';
     document.body.classList.toggle('paused', state.paused);
-    if (state.paused) showToast('Paused. You can resume or tap Edit maze.');
+    if (state.paused) showToast('Paused. Resume when ready, or tap Edit to change the maze.');
   });
   speedButton.addEventListener('click', () => {
     state.speedIndex = (state.speedIndex + 1) % state.speeds.length;
-    speedButton.textContent = `${state.speeds[state.speedIndex]}×`;
+    speedButton.textContent = `${state.speeds[state.speedIndex]}× Speed`;
   });
 
   function updateStats() {
