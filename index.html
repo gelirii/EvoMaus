@@ -14,7 +14,7 @@
     <header class="topbar">
       <div class="titleRow">
         <div class="brand"><strong>EvoMaus</strong><span class="version">v1</span></div>
-        <div class="hint">1 finger draws · drag the mouse to move start · pinch to zoom · 2 fingers pan</div>
+        <button id="startButton" class="primary">▶ Start</button>
       </div>
 
       <div class="editorControls" aria-label="Maze editor controls">
@@ -27,10 +27,8 @@
         <label class="populationBox">
           <span>Mice</span>
           <input id="population" type="range" min="5" max="250" step="5" value="80" />
-          <span id="populationValue">80</span>
+          <strong id="populationValue">80</strong>
         </label>
-
-        <button id="startButton" class="primary">▶ Start</button>
       </div>
 
       <div class="simControls" aria-label="Evolution controls">
@@ -49,8 +47,7 @@
     <main id="stage">
       <canvas id="mazeCanvas" aria-label="EvoMaus maze editor and simulation"></canvas>
       <div id="toast" role="status"></div>
-      <div class="mouseNote">The square mouse is your start point — drag it anywhere.</div>
-      <div class="legend">Black = wall · yellow = cheese reward · red = instant death · green = finish. Only one green goal can exist.</div>
+      <div id="toolHelp" class="mouseNote">Tap or drag to place walls.</div>
       <div class="floating">
         <button id="homeButton" class="floatButton" title="Centre on start">⌂</button>
         <button id="clearButton" class="floatButton" title="Clear maze">⌫</button>
