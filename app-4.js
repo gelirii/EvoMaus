@@ -133,8 +133,9 @@
     state.maxSteps = Math.max(180, Math.min(1800, startDist * 5 + 140));
     state.mode = 'sim';
     state.paused = false;
-    pauseButton.textContent = 'Pause';
+    pauseButton.textContent = '⏸ Pause';
     document.body.classList.add('simulating');
+    document.body.classList.remove('paused');
     initialiseGenerationOne();
     state.view.scale = Math.max(23, Math.min(42, state.view.scale));
     centreOnStart();
@@ -147,16 +148,18 @@
     state.mode = 'edit';
     state.paused = false;
     state.mice = [];
-    document.body.classList.remove('simulating');
+    document.body.classList.remove('simulating', 'paused');
+    pauseButton.textContent = '⏸ Pause';
     centreOnStart();
-    showToast('Evolution stopped. Maze editor restored.');
+    showToast('Evolution stopped. Edit the maze, then Start begins a fresh Generation 1.');
   }
 
   function resetEvolution() {
     if (state.mode !== 'sim') return;
     initialiseGenerationOne();
     state.paused = false;
-    pauseButton.textContent = 'Pause';
+    pauseButton.textContent = '⏸ Pause';
+    document.body.classList.remove('paused');
     centreOnStart();
     showToast('Back to Generation 1. Ancestral wisdom deleted.');
   }
@@ -166,7 +169,9 @@
   resetEvolutionButton.addEventListener('click', resetEvolution);
   pauseButton.addEventListener('click', () => {
     state.paused = !state.paused;
-    pauseButton.textContent = state.paused ? 'Resume' : 'Pause';
+    pauseButton.textContent = state.paused ? '▶ Resume' : '⏸ Pause';
+    document.body.classList.toggle('paused', state.paused);
+    if (state.paused) showToast('Paused. You can resume or tap Edit maze.');
   });
   speedButton.addEventListener('click', () => {
     state.speedIndex = (state.speedIndex + 1) % state.speeds.length;
