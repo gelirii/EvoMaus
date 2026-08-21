@@ -34,7 +34,7 @@
     return dist;
   }
 
-  // v2 brain: each mouse sees up to eight cells in eight directions and evolves
+  // v1.1 brain: each mouse sees up to eight cells in eight directions and evolves
   // a tiny neural network rather than a fixed list of moves.
   const SIGHT_DISTANCE = 8;
   const SIGHT_DIRS = [
@@ -47,10 +47,16 @@
     { x: -1, y: 0 },  // W
     { x: -1, y: -1 }  // NW
   ];
-  const BRAIN_INPUTS = 44;
+  const BRAIN_INPUTS = 45;
   const BRAIN_HIDDEN = 12;
   const BRAIN_OUTPUTS = 4;
   const BRAIN_WEIGHTS = (BRAIN_INPUTS + 1) * BRAIN_HIDDEN + (BRAIN_HIDDEN + 1) * BRAIN_OUTPUTS;
+
+  function stagnationLimit() {
+    // Enough room for a useful detour/backtrack, but not hundreds of moves spent
+    // oscillating between already-known cells. Larger mazes get a little more patience.
+    return Math.max(48, Math.min(120, Math.round(42 + state.startDistance * 0.18)));
+  }
 
   function randomGenome() {
     const g = new Float32Array(BRAIN_WEIGHTS);
@@ -81,6 +87,7 @@
       currentDistance: state.startDistance,
       lastDir: -1,
       lastWallHit: 0,
+      staleSteps: 0,
       fitness: 0,
       mutations: 0
     };
@@ -113,7 +120,9 @@
     score += Math.max(0, mouse.visited.size - 1) * 40;
     score -= mouse.wallHits * 800;
     score -= mouse.step * 1.2;
+    score -= mouse.staleSteps * 90;
     if (mouse.deathReason === 'danger') score -= 8000;
+    if (mouse.deathReason === 'stagnation') score -= 10000;
     if (mouse.reachedGoal) {
       score += 1000000;
       score += Math.max(0, state.maxSteps - mouse.step) * 120;
@@ -204,6 +213,11 @@
       inputs.push(!inBounds(nx, ny) || mouse.visited.has(cellKey(nx, ny)) ? 1 : 0);
     }
 
+    // Restlessness: rises from 0 to 1 when the mouse keeps revisiting old ground
+    // without finding cheese, new cells, or better route progress. Evolved brains
+    // can learn to change tactics before the stagnation limit kills them.
+    inputs.push(Math.min(1, mouse.staleSteps / stagnationLimit()));
+
     return inputs;
   }
 
@@ -251,7 +265,9 @@
     if (!inBounds(nx, ny) || getCell(nx, ny) === CELL.WALL) {
       mouse.wallHits++;
       mouse.lastWallHit = 1;
+      mouse.staleSteps++;
       if (mouse.wallHits >= WALL_DEATH_HITS) killMouse(mouse, 'walls');
+      else if (mouse.staleSteps >= stagnationLimit()) killMouse(mouse, 'stagnation');
       else {
         computeFitness(mouse);
         recordMilestones(mouse);
@@ -260,9 +276,14 @@
     }
 
     mouse.lastWallHit = 0;
+    const key = cellKey(nx, ny);
+    const foundNewCell = !mouse.visited.has(key);
+    const previousBestDistance = mouse.bestDistance;
+    const previousCheeseCount = mouse.cheeseCount;
+
     mouse.x = nx;
     mouse.y = ny;
-    mouse.visited.add(cellKey(nx, ny));
+    mouse.visited.add(key);
     const type = getCell(nx, ny);
 
     if (type === CELL.DANGER) {
@@ -270,12 +291,9 @@
       return;
     }
 
-    if (type === CELL.CHEESE) {
-      const key = cellKey(nx, ny);
-      if (!mouse.cheeses.has(key)) {
-        mouse.cheeses.add(key);
-        mouse.cheeseCount++;
-      }
+    if (type === CELL.CHEESE && !mouse.cheeses.has(key)) {
+      mouse.cheeses.add(key);
+      mouse.cheeseCount++;
     }
 
     const dist = state.distanceMap[indexFor(nx, ny)];
@@ -283,6 +301,11 @@
       mouse.currentDistance = dist;
       if (dist < mouse.bestDistance) mouse.bestDistance = dist;
     }
+
+    const improvedProgress = mouse.bestDistance < previousBestDistance;
+    const foundCheese = mouse.cheeseCount > previousCheeseCount;
+    if (foundNewCell || improvedProgress || foundCheese) mouse.staleSteps = 0;
+    else mouse.staleSteps++;
 
     if (state.goal && nx === state.goal.x && ny === state.goal.y) {
       mouse.reachedGoal = true;
@@ -292,6 +315,11 @@
         state.firstGoalGeneration = state.generation;
         showToast(`Goal reached! Gen ${state.generation} has cracked the maze.`, 'good');
       }
+      return;
+    }
+
+    if (mouse.staleSteps >= stagnationLimit()) {
+      killMouse(mouse, 'stagnation');
       return;
     }
 
