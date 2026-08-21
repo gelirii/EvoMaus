@@ -25,20 +25,20 @@
   }
 
   function breedGenome(a, b, mutationRate) {
-    const length = state.maxSteps;
-    const child = new Uint8Array(length);
-    const split1 = Math.floor(Math.random() * length);
-    const split2 = split1 + Math.floor(Math.random() * Math.max(1, length - split1));
+    const child = new Float32Array(BRAIN_WEIGHTS);
     let mutationCount = 0;
 
-    for (let i = 0; i < length; i++) {
-      let gene = (i >= split1 && i < split2) ? b.genome[i] : a.genome[i];
+    for (let i = 0; i < child.length; i++) {
+      let gene = Math.random() < 0.5 ? a.genome[i] : b.genome[i];
       if (Math.random() < mutationRate) {
-        const old = gene;
-        do { gene = Math.floor(Math.random() * 4); } while (gene === old && Math.random() < .8);
         mutationCount++;
+        if (Math.random() < 0.035) {
+          gene = (Math.random() * 2 - 1) * 1.2;
+        } else {
+          gene += (Math.random() + Math.random() - 1) * 0.55;
+        }
       }
-      child[i] = gene;
+      child[i] = Math.max(-4, Math.min(4, gene));
     }
     return { genome: child, mutationCount };
   }
@@ -49,10 +49,14 @@
     if (!champion) return;
 
     const championProgress = progressOf(champion);
-    if (championProgress <= state.lastBestProgress + 0.001) state.stagnation++;
+    const evolutionMetric = champion.reachedGoal
+      ? 1 + Math.max(0, state.maxSteps - champion.step) / Math.max(1, state.maxSteps)
+      : championProgress;
+
+    if (evolutionMetric <= state.lastBestProgress + 0.0005) state.stagnation++;
     else {
       state.stagnation = 0;
-      state.lastBestProgress = championProgress;
+      state.lastBestProgress = evolutionMetric;
     }
 
     if (!state.bestEver || champion.fitness > state.bestEver.fitness) {
@@ -70,17 +74,19 @@
     const poolSize = Math.max(2, Math.ceil(ranked.length * 0.2));
     const pool = ranked.slice(0, poolSize);
     const immigrantCount = Math.max(1, Math.round(state.populationSize * 0.05));
-    const eliteCount = Math.min(3, Math.max(1, Math.round(state.populationSize * 0.02)));
-    const mutationRate = Math.min(0.10, 0.024 + Math.max(0, state.stagnation - 3) * 0.008);
+    const eliteCount = Math.min(4, Math.max(1, Math.round(state.populationSize * 0.02)));
+    const mutationRate = Math.min(0.12, 0.028 + Math.max(0, state.stagnation - 3) * 0.006);
     const next = [];
     const nextGeneration = state.generation + 1;
 
+    // Keep a few proven brains intact.
     for (let i = 0; i < eliteCount && i < ranked.length; i++) {
       next.push(makeMouse(ranked[i].genome.slice(), nextGeneration, [ranked[i].id]));
     }
 
+    // A small immigrant population prevents one mediocre idea taking over forever.
     for (let i = 0; i < immigrantCount && next.length < state.populationSize; i++) {
-      next.push(makeMouse(randomGenome(state.maxSteps), nextGeneration));
+      next.push(makeMouse(randomGenome(), nextGeneration));
     }
 
     while (next.length < state.populationSize) {
@@ -127,17 +133,14 @@
     }
 
     state.startDistance = startDist;
-    state.maxSteps = Math.max(180, Math.min(1800, startDist * 5 + 140));
+    state.maxSteps = Math.max(220, Math.min(2200, startDist * 6 + 160));
     return true;
   }
 
-  function fitGenomeToMaze(genome, length) {
-    if (genome.length === length) return genome.slice();
-    const fitted = new Uint8Array(length);
-    const copyLength = Math.min(genome.length, length);
-    fitted.set(genome.subarray(0, copyLength));
-    for (let i = copyLength; i < length; i++) fitted[i] = Math.floor(Math.random() * 4);
-    return fitted;
+  function currentMazeSignature() {
+    const goal = state.goal ? `${state.goal.x},${state.goal.y}` : 'none';
+    const cells = [...state.cells.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    return `${state.start.x},${state.start.y}|${goal}|${cells.map(([key, type]) => `${key}:${type}`).join(';')}`;
   }
 
   function enterSimulationUi() {
@@ -159,23 +162,34 @@
     const suspended = state.suspendedRun;
     if (!suspended) return;
 
+    const mazeChanged = suspended.mazeSignature !== currentMazeSignature();
     state.generation = suspended.generation;
     state.populationSize = suspended.mice.length;
     populationInput.value = String(state.populationSize);
     populationValue.textContent = String(state.populationSize);
 
     state.mice = suspended.mice.map(saved => {
-      const mouse = makeMouse(fitGenomeToMaze(saved.genome, state.maxSteps), state.generation, saved.parentIds);
+      const mouse = makeMouse(saved.genome.slice(), state.generation, saved.parentIds);
       mouse.mutations = saved.mutations;
       return mouse;
     });
+
+    if (mazeChanged) {
+      // Same evolved brains, new challenge: old progress/time is no longer comparable.
+      state.allTimeBestProgress = 0;
+      state.bestTime = null;
+      state.bestEver = null;
+      state.lastBestProgress = -1;
+      state.stagnation = 0;
+      state.firstGoalGeneration = null;
+    }
 
     state.trackedMouseId = state.mice[0]?.id ?? null;
     state.generationCooldown = 0;
     state.suspendedRun = null;
     enterSimulationUi();
     updateStats();
-    showToast(`Generation ${state.generation} restarted with the same mice on the edited maze.`);
+    showToast(`Gen ${state.generation} restarted with the same evolved brains${mazeChanged ? ' on the edited maze' : ''}.`);
   }
 
   function startEvolution() {
@@ -188,7 +202,7 @@
 
     enterSimulationUi();
     initialiseGenerationOne();
-    showToast(`Generation 1: ${state.populationSize} mice, absolutely no clue what they're doing.`);
+    showToast(`Gen 1: ${state.populationSize} mice with random tiny brains. Expect nonsense.`);
   }
 
   function editMaze() {
@@ -196,16 +210,13 @@
 
     state.suspendedRun = {
       generation: state.generation,
+      mazeSignature: currentMazeSignature(),
       mice: state.mice.map(mouse => ({
         genome: mouse.genome.slice(),
         parentIds: [...mouse.parentIds],
         mutations: mouse.mutations
       }))
     };
-
-    // If this generation had just found the goal, editing means this generation
-    // must prove itself again on the changed maze.
-    if (state.firstGoalGeneration === state.generation) state.firstGoalGeneration = null;
 
     state.mode = 'edit';
     state.paused = false;
@@ -216,7 +227,7 @@
     document.body.classList.add('editing-run');
     pauseButton.textContent = '⏸ Pause';
     centreOnStart();
-    showToast(`Editing Generation ${state.generation}. Resume reruns the same genomes from the start.`);
+    showToast(`Editing Gen ${state.generation}. Resume reruns these same evolved brains.`);
   }
 
   function stopEvolution() {
@@ -231,6 +242,8 @@
     state.generationCooldown = 0;
     state.trackedMouseId = null;
     state.bestEver = null;
+    state.allTimeBestProgress = 0;
+    state.bestTime = null;
     state.stagnation = 0;
     state.lastBestProgress = -1;
     state.firstGoalGeneration = null;
@@ -242,9 +255,11 @@
     startButton.textContent = '▶ Start';
     pauseButton.textContent = '⏸ Pause';
     speedButton.textContent = '1× Speed';
+    progressLabel.textContent = 'Best Progress';
+    progressStat.textContent = '0%';
     document.body.classList.remove('simulating', 'paused', 'editing-run');
     centreOnStart();
-    showToast('Evolution stopped. The maze stays; next Start begins again at Generation 1.');
+    showToast('Evolution stopped. The maze stays; next Start begins again at Gen 1.');
   }
 
   startButton.addEventListener('click', startEvolution);
@@ -271,6 +286,14 @@
     const best = ranked[0];
     genStat.textContent = String(state.generation);
     aliveStat.textContent = `${alive}/${state.populationSize}`;
-    progressStat.textContent = `${Math.round(progressOf(best) * 100)}%`;
+
+    if (state.bestTime !== null) {
+      progressLabel.textContent = 'Best Time';
+      progressStat.textContent = `${state.bestTime} steps`;
+    } else {
+      progressLabel.textContent = 'Best Progress';
+      progressStat.textContent = `${Math.round(state.allTimeBestProgress * 100)}%`;
+    }
+
     cheeseStat.textContent = String(best?.cheeseCount ?? 0);
   }
