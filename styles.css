@@ -18,21 +18,35 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+html, body {
+  margin: 0;
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
 body { overscroll-behavior: none; color: var(--text); -webkit-user-select: none; user-select: none; }
 button, input { font: inherit; }
 
 #app {
-  width: 100%;
+  width: 100vw;
+  max-width: 100vw;
+  min-width: 0;
   height: 100dvh;
+  overflow: hidden;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
   background: var(--bg);
 }
 
 .topbar {
   position: relative;
   z-index: 5;
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow: hidden;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   padding: calc(8px + env(safe-area-inset-top)) 10px 9px;
@@ -42,6 +56,8 @@ button, input { font: inherit; }
 }
 
 .titleRow {
+  width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,28 +72,22 @@ button, input { font: inherit; }
   white-space: nowrap;
   flex: 0 0 auto;
 }
-
 .brand strong { font-size: 22px; letter-spacing: -.55px; }
 .version { font-size: 11px; color: var(--muted); font-weight: 700; }
 
-.titleActions,
-.simTitleActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  min-width: 0;
-}
-.simTitleActions { display: none; }
-
 .editorControls, .simControls {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 7px;
   margin-top: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   padding-bottom: 1px;
+  -webkit-overflow-scrolling: touch;
 }
 .editorControls::-webkit-scrollbar, .simControls::-webkit-scrollbar { display: none; }
 
@@ -103,9 +113,7 @@ button, input { font: inherit; }
 .tool[data-tool="cheese"] .swatch { background: var(--cheese); }
 .tool[data-tool="danger"] .swatch { background: var(--danger); }
 .tool[data-tool="goal"] .swatch { background: var(--goal); }
-.tool[data-tool="eraser"] .swatch {
-  background: repeating-linear-gradient(135deg, #aab4c3 0 4px, #e8edf3 4px 8px);
-}
+.tool[data-tool="eraser"] .swatch { background: repeating-linear-gradient(135deg, #aab4c3 0 4px, #e8edf3 4px 8px); }
 
 .populationBox {
   flex: 1 0 166px;
@@ -143,45 +151,38 @@ button, input { font: inherit; }
   font-weight: 900;
   flex: 0 0 auto;
 }
-.primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-  box-shadow: 0 5px 16px rgba(133,224,197,.18);
-}
-#startButton {
-  min-width: 104px;
-  height: 38px;
-  padding: 0 17px;
-  font-size: 14px;
-}
+.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 5px 16px rgba(133,224,197,.18); }
+#startButton { min-width: 104px; height: 38px; padding: 0 17px; font-size: 14px; }
 .secondary { background: var(--button); color: var(--text); border: 1px solid var(--line); }
 .dangerButton { background: rgba(238,90,95,.17); color: #ffafb2; border: 1px solid rgba(238,90,95,.38); }
 button:active { transform: translateY(1px) scale(.99); }
 
-#pauseButton,
-#editButton {
-  height: 38px;
-  padding: 0 11px;
-  font-size: 12px;
+.simActionBar {
+  display: none;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
 }
-#pauseButton {
-  min-width: 82px;
-  border-color: rgba(133,224,197,.45);
+.simActionBar button {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 5px;
+  font-size: 11px;
+  white-space: nowrap;
 }
-#editButton { min-width: 88px; }
-body.paused #pauseButton {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-color: transparent;
-}
+body.paused #pauseButton { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 
 .simControls { display: none; }
 body.simulating .editorControls { display: none; }
+body.simulating .simActionBar { display: grid; }
 body.simulating .simControls { display: flex; }
 body.simulating #startButton { display: none; }
-body.simulating .simTitleActions { display: flex; }
 
 .statChip {
+  flex: 0 0 auto;
   min-width: max-content;
   height: 42px;
   border: 1px solid var(--line);
@@ -197,6 +198,9 @@ body.simulating .simTitleActions { display: flex; }
 
 #stage {
   position: relative;
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
   min-height: 0;
   overflow: hidden;
   background: #ece8dc;
@@ -204,6 +208,7 @@ body.simulating .simTitleActions { display: flex; }
 #mazeCanvas {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   touch-action: none;
   cursor: crosshair;
@@ -282,37 +287,21 @@ body.simulating .mouseNote { display: none; }
     gap: 6px;
     overflow: visible;
   }
-  .tool {
-    width: 100%;
-    min-width: 0;
-    padding-left: 3px;
-    padding-right: 3px;
-  }
-  .populationBox {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-width: 0;
-    flex: none;
-  }
+  .tool { width: 100%; min-width: 0; padding-left: 3px; padding-right: 3px; }
+  .populationBox { grid-column: 1 / -1; width: 100%; min-width: 0; flex: none; }
   body.simulating .editorControls { display: none; }
-
   body.simulating .brand strong { font-size: 20px; }
   body.simulating .version { display: none; }
-  #pauseButton,
-  #editButton {
-    padding-left: 9px;
-    padding-right: 9px;
-  }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 360px) {
+  .simActionBar button { font-size: 10px; padding: 0 3px; }
   body.simulating .brand strong { font-size: 18px; }
-  #pauseButton { min-width: 76px; }
-  #editButton { min-width: 80px; }
 }
 
 @media (min-width: 700px) {
   .topbar { padding-left: 16px; padding-right: 16px; }
   .tool { min-width: 56px; }
   .floating { right: 16px; bottom: 16px; }
+  .simActionBar { max-width: 560px; }
 }
