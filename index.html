@@ -14,7 +14,13 @@
     <header class="topbar">
       <div class="titleRow">
         <div class="brand"><strong>EvoMaus</strong><span class="version">v1</span></div>
-        <button id="startButton" class="primary">▶ Start</button>
+        <div class="titleActions">
+          <button id="startButton" class="primary">▶ Start</button>
+          <div class="simTitleActions" aria-label="Simulation actions">
+            <button id="pauseButton" class="secondary">⏸ Pause</button>
+            <button id="editButton" class="secondary">✎ Edit maze</button>
+          </div>
+        </div>
       </div>
 
       <div class="editorControls" aria-label="Maze editor controls">
@@ -31,15 +37,13 @@
         </label>
       </div>
 
-      <div class="simControls" aria-label="Evolution controls">
+      <div class="simControls" aria-label="Evolution stats and controls">
         <div class="statChip"><span>Generation</span><strong id="genStat">1</strong></div>
         <div class="statChip"><span>Alive</span><strong id="aliveStat">0/0</strong></div>
         <div class="statChip"><span>Best progress</span><strong id="progressStat">0%</strong></div>
         <div class="statChip"><span>Cheese</span><strong id="cheeseStat">0</strong></div>
         <div class="statChip"><span>Wall hits</span><strong id="wallStat">0</strong></div>
-        <button id="pauseButton" class="secondary">Pause</button>
         <button id="speedButton" class="secondary">1×</button>
-        <button id="editButton" class="secondary">Edit maze</button>
         <button id="resetEvolutionButton" class="dangerButton">Reset evolution</button>
       </div>
     </header>
