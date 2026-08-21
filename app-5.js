@@ -11,7 +11,6 @@
     const minY = Math.max(0, Math.floor(topLeft.y) - 1);
     const maxY = Math.min(GRID_H - 1, Math.ceil(bottomRight.y) + 1);
 
-    // Outer world area shading.
     const worldA = worldToScreen(0, 0);
     const worldB = worldToScreen(GRID_W, GRID_H);
     ctx.fillStyle = '#f7f4eb';
@@ -121,7 +120,6 @@
     roundRect(ctx, x, y, s, s, r);
     ctx.fill();
 
-    // Ears.
     if (s > 8) {
       ctx.fillStyle = startMarker ? '#9299a4' : '#9ba1ab';
       ctx.beginPath();
@@ -161,9 +159,11 @@
   }
 
   function updateMouseRenderPositions(dt) {
-    // One time-based smoothing layer. The camera follows this exact position,
-    // so the tracked mouse stays centred instead of the camera lagging behind it.
-    const blend = 1 - Math.exp(-Math.max(0, dt) / 68);
+    // The simulation still advances on grid ticks, but drawing eases continuously
+    // between those positions. Slower modes get a longer glide; fast modes stay responsive.
+    const speed = state.speeds[state.speedIndex];
+    const smoothingMs = Math.max(26, 112 / speed);
+    const blend = 1 - Math.exp(-Math.max(0, dt) / smoothingMs);
     for (const mouse of state.mice) {
       mouse.renderX += (mouse.x - mouse.renderX) * blend;
       mouse.renderY += (mouse.y - mouse.renderY) * blend;
@@ -200,8 +200,8 @@
     const mouse = chooseTrackedMouse();
     if (!mouse) return;
 
-    // Lock the viewport to the mouse's already-smoothed render position.
-    // This keeps the followed mouse exactly at the canvas centre.
+    // The view centre and tracked mouse use the same smoothed coordinates.
+    // With the stage constrained to the visual viewport this is the true on-screen centre.
     state.view.cx = mouse.renderX + .5;
     state.view.cy = mouse.renderY + .5;
     clampView();
@@ -231,7 +231,6 @@
     requestAnimationFrame(frame);
   }
 
-  // Small public debug surface used by automated smoke tests and useful during tuning.
   window.EvoMausDebug = Object.freeze({
     snapshot() {
       const best = state.mice.length ? [...state.mice].sort((a,b) => computeFitness(b) - computeFitness(a))[0] : null;
@@ -246,7 +245,10 @@
         dangerCount: [...state.cells.values()].filter(v => v === CELL.DANGER).length,
         alive: state.mice.filter(m => m.alive).length,
         bestProgress: progressOf(best),
-        firstGoalGeneration: state.firstGoalGeneration
+        firstGoalGeneration: state.firstGoalGeneration,
+        viewportWidth: window.visualViewport?.width || window.innerWidth,
+        stageWidth: stage.getBoundingClientRect().width,
+        canvasWidth: canvas.getBoundingClientRect().width
       };
     },
     clearMaze() { state.cells.clear(); state.goal = null; },
@@ -263,4 +265,6 @@
   populationValue.textContent = String(state.populationSize);
   centreOnStart();
   window.addEventListener('resize', resizeCanvas);
+  window.visualViewport?.addEventListener('resize', resizeCanvas);
+  window.visualViewport?.addEventListener('scroll', resizeCanvas);
   requestAnimationFrame(frame);
