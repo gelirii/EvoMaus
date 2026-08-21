@@ -160,6 +160,16 @@
     context.closePath();
   }
 
+  function updateMouseRenderPositions(dt) {
+    // One time-based smoothing layer. The camera follows this exact position,
+    // so the tracked mouse stays centred instead of the camera lagging behind it.
+    const blend = 1 - Math.exp(-Math.max(0, dt) / 68);
+    for (const mouse of state.mice) {
+      mouse.renderX += (mouse.x - mouse.renderX) * blend;
+      mouse.renderY += (mouse.y - mouse.renderY) * blend;
+    }
+  }
+
   function render() {
     resizeCanvas();
     const bounds = drawGrid();
@@ -178,9 +188,6 @@
       const tracked = chooseTrackedMouse();
       const trackedId = tracked?.id;
       for (const mouse of state.mice) {
-        // Animate a short glide between grid cells without altering simulation state.
-        mouse.renderX += (mouse.x - mouse.renderX) * .38;
-        mouse.renderY += (mouse.y - mouse.renderY) * .38;
         if (!mouse.alive && !mouse.reachedGoal) continue;
         const isTracked = mouse.id === trackedId;
         drawMouseSquare(mouse.renderX, mouse.renderY, bounds.scale, isTracked ? 1 : .26, isTracked, false);
@@ -192,10 +199,11 @@
     if (state.mode !== 'sim') return;
     const mouse = chooseTrackedMouse();
     if (!mouse) return;
-    const tx = mouse.renderX + .5;
-    const ty = mouse.renderY + .5;
-    state.view.cx += (tx - state.view.cx) * .095;
-    state.view.cy += (ty - state.view.cy) * .095;
+
+    // Lock the viewport to the mouse's already-smoothed render position.
+    // This keeps the followed mouse exactly at the canvas centre.
+    state.view.cx = mouse.renderX + .5;
+    state.view.cy = mouse.renderY + .5;
     clampView();
   }
 
@@ -203,17 +211,20 @@
     const dt = Math.min(100, now - state.lastFrameTime);
     state.lastFrameTime = now;
 
-    if (state.mode === 'sim' && !state.paused) {
-      const ticksPerSecond = 9 * state.speeds[state.speedIndex];
-      state.tickAccumulator += dt * ticksPerSecond / 1000;
-      let guard = 0;
-      while (state.tickAccumulator >= 1 && guard < 20) {
-        simulationTick();
-        state.tickAccumulator -= 1;
-        guard++;
+    if (state.mode === 'sim') {
+      if (!state.paused) {
+        const ticksPerSecond = 9 * state.speeds[state.speedIndex];
+        state.tickAccumulator += dt * ticksPerSecond / 1000;
+        let guard = 0;
+        while (state.tickAccumulator >= 1 && guard < 20) {
+          simulationTick();
+          state.tickAccumulator -= 1;
+          guard++;
+        }
+        updateMouseRenderPositions(dt);
+        updateStats();
       }
       followTrackedMouse();
-      updateStats();
     }
 
     render();
