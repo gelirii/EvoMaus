@@ -29,6 +29,7 @@
   const clearButton = document.getElementById('clearButton');
   const genStat = document.getElementById('genStat');
   const aliveStat = document.getElementById('aliveStat');
+  const progressLabel = document.getElementById('progressLabel');
   const progressStat = document.getElementById('progressStat');
   const cheeseStat = document.getElementById('cheeseStat');
 
@@ -60,6 +61,8 @@
     generationCooldown: 0,
     trackedMouseId: null,
     bestEver: null,
+    allTimeBestProgress: 0,
+    bestTime: null,
     stagnation: 0,
     lastBestProgress: -1,
     firstGoalGeneration: null,
