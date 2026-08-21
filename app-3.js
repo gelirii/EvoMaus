@@ -51,6 +51,7 @@
   const BRAIN_HIDDEN = 12;
   const BRAIN_OUTPUTS = 4;
   const BRAIN_WEIGHTS = (BRAIN_INPUTS + 1) * BRAIN_HIDDEN + (BRAIN_HIDDEN + 1) * BRAIN_OUTPUTS;
+  const RECENT_MEMORY_STEPS = 10;
 
   function stagnationLimit() {
     // Enough room for a useful detour/backtrack, but not hundreds of moves spent
@@ -83,10 +84,14 @@
       cheeseCount: 0,
       cheeses: new Set(),
       visited: new Set([startKey]),
+      lastVisitStep: new Map([[startKey, 0]]),
       bestDistance: state.startDistance,
       currentDistance: state.startDistance,
       lastDir: -1,
       lastWallHit: 0,
+      previousX: null,
+      previousY: null,
+      reverseStreak: 0,
       staleSteps: 0,
       fitness: 0,
       mutations: 0
@@ -185,6 +190,14 @@
     return [wall, danger, cheese, goal];
   }
 
+  function recentnessOf(mouse, x, y) {
+    if (!inBounds(x, y)) return 1;
+    const lastStep = mouse.lastVisitStep.get(cellKey(x, y));
+    if (lastStep === undefined) return 0;
+    const age = Math.max(0, mouse.step - lastStep);
+    return Math.max(0, 1 - age / RECENT_MEMORY_STEPS);
+  }
+
   function brainInputs(mouse) {
     const inputs = [];
 
@@ -198,32 +211,44 @@
     inputs.push(dx / bearingScale, dy / bearingScale);
 
     // The mouse can feel how far around the safe route it currently is.
-    // This is flood-fill progress, so sometimes moving geometrically away from the
-    // goal correctly increases this value when the maze requires a detour.
     inputs.push(currentProgressOf(mouse));
 
     // Tiny memory: previous direction and whether the previous action hit a wall.
     for (let d = 0; d < 4; d++) inputs.push(mouse.lastDir === d ? 1 : 0);
     inputs.push(mouse.lastWallHit ? 1 : 0);
 
-    // Local route memory: has this mouse already visited each adjacent cardinal cell?
+    // Short-term spatial memory for each adjacent cell. 1 means "I was just there",
+    // fading toward 0 over ten moves. This replaces the old lifetime visited/not-visited
+    // flag so the brain can distinguish a useful return journey from immediate dithering.
     for (const d of DIRS) {
-      const nx = mouse.x + d.x;
-      const ny = mouse.y + d.y;
-      inputs.push(!inBounds(nx, ny) || mouse.visited.has(cellKey(nx, ny)) ? 1 : 0);
+      inputs.push(recentnessOf(mouse, mouse.x + d.x, mouse.y + d.y));
     }
 
-    // Restlessness: rises from 0 to 1 when the mouse keeps revisiting old ground
-    // without finding cheese, new cells, or better route progress. Evolved brains
-    // can learn to change tactics before the stagnation limit kills them.
+    // Restlessness rises when the mouse keeps revisiting old ground without achieving anything.
     inputs.push(Math.min(1, mouse.staleSteps / stagnationLimit()));
 
     return inputs;
   }
 
+  function isSafeMove(mouse, dir) {
+    const d = DIRS[dir];
+    const x = mouse.x + d.x;
+    const y = mouse.y + d.y;
+    if (!inBounds(x, y)) return false;
+    const type = getCell(x, y);
+    return type !== CELL.WALL && type !== CELL.DANGER;
+  }
+
+  function isImmediateReverse(mouse, dir) {
+    if (mouse.previousX === null || mouse.previousY === null) return false;
+    const d = DIRS[dir];
+    return mouse.x + d.x === mouse.previousX && mouse.y + d.y === mouse.previousY;
+  }
+
   function decideMove(mouse) {
     const inputs = brainInputs(mouse);
     const hidden = new Float32Array(BRAIN_HIDDEN);
+    const outputs = new Float32Array(BRAIN_OUTPUTS);
     const g = mouse.genome;
     let wi = 0;
 
@@ -234,17 +259,29 @@
       hidden[h] = Math.tanh(sum);
     }
 
-    let bestDir = 0;
-    let bestScore = -Infinity;
     for (let o = 0; o < BRAIN_OUTPUTS; o++) {
       let sum = 0;
       for (let h = 0; h < BRAIN_HIDDEN; h++) sum += hidden[h] * g[wi++];
-      sum += g[wi++]; // bias
-      if (sum > bestScore) {
-        bestScore = sum;
-        bestDir = o;
-      }
+      outputs[o] = sum + g[wi++]; // bias
     }
+
+    let bestDir = 0;
+    for (let o = 1; o < BRAIN_OUTPUTS; o++) {
+      if (outputs[o] > outputs[bestDir]) bestDir = o;
+    }
+
+    // One immediate reversal is allowed: mice must be able to change their mind or
+    // back out of a cul-de-sac. But A→B→A→B vibration is blocked whenever another
+    // safe move exists. In a narrow corridor/dead end, reversing remains unrestricted.
+    if (mouse.reverseStreak > 0 && isImmediateReverse(mouse, bestDir)) {
+      let alternative = -1;
+      for (let o = 0; o < BRAIN_OUTPUTS; o++) {
+        if (isImmediateReverse(mouse, o) || !isSafeMove(mouse, o)) continue;
+        if (alternative < 0 || outputs[o] > outputs[alternative]) alternative = o;
+      }
+      if (alternative >= 0) bestDir = alternative;
+    }
+
     return bestDir;
   }
 
@@ -258,8 +295,11 @@
     const gene = decideMove(mouse);
     const d = DIRS[gene];
     mouse.step++;
-    const nx = mouse.x + d.x;
-    const ny = mouse.y + d.y;
+    const fromX = mouse.x;
+    const fromY = mouse.y;
+    const nx = fromX + d.x;
+    const ny = fromY + d.y;
+    const reversing = nx === mouse.previousX && ny === mouse.previousY;
     mouse.lastDir = gene;
 
     if (!inBounds(nx, ny) || getCell(nx, ny) === CELL.WALL) {
@@ -281,9 +321,13 @@
     const previousBestDistance = mouse.bestDistance;
     const previousCheeseCount = mouse.cheeseCount;
 
+    mouse.previousX = fromX;
+    mouse.previousY = fromY;
+    mouse.reverseStreak = reversing ? mouse.reverseStreak + 1 : 0;
     mouse.x = nx;
     mouse.y = ny;
     mouse.visited.add(key);
+    mouse.lastVisitStep.set(key, mouse.step);
     const type = getCell(nx, ny);
 
     if (type === CELL.DANGER) {
