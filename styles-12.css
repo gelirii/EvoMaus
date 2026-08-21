@@ -1,0 +1,73 @@
+.lineageEditStats {
+  display: none;
+  flex: 1 0 360px;
+  min-width: 320px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+body.editing-run .populationBox { display: none; }
+body.editing-run .lineageEditStats { display: grid; }
+
+.lineageEditStat {
+  min-width: 0;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--panel-2);
+  padding: 4px 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 1px 6px;
+}
+
+.lineageName {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .45px;
+  white-space: nowrap;
+}
+.lineageName i {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.3);
+}
+.lineage-white .lineageName i { background: #fffdf7; border-color: #aaa79f; }
+.lineage-grey .lineageName i { background: #aab1bd; border-color: #747d8a; }
+.lineage-black .lineageName i { background: #3d4450; border-color: #697382; }
+
+.lineageProgress {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.lineageCheese {
+  font-size: 10px;
+  font-weight: 800;
+  color: #f0d86b;
+  white-space: nowrap;
+}
+
+@media (max-width: 699px) {
+  .lineageEditStats {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+  .lineageEditStat { padding-left: 6px; padding-right: 6px; }
+  .lineageName { font-size: 8px; letter-spacing: .25px; }
+  .lineageProgress { font-size: 12px; }
+  .lineageCheese { font-size: 9px; }
+}
