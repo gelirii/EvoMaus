@@ -1,0 +1,57 @@
+/* EvoMaus v1.3 visual clarity pass */
+
+/* Keep product/version/generation together and remove the now-empty separate stats row. */
+body.v134Ready .brand{display:flex!important;align-items:baseline!important;gap:8px!important;flex-wrap:nowrap!important}
+body.v134Ready .brand .version{display:inline!important;visibility:visible!important;opacity:1!important;color:#8f99aa!important;font-size:12px!important;font-weight:800!important}
+body.v134Ready .brand .v134GenInline{display:none!important;margin:0!important;padding:0!important;background:none!important;border:0!important;min-width:0!important;height:auto!important;gap:4px!important;align-items:baseline!important}
+body.v134Ready.simulating .brand .v134GenInline{display:flex!important}
+body.v134Ready .brand .v134GenInline span{font-size:10px!important;line-height:1!important;color:#8f99aa!important;font-weight:900!important;text-transform:uppercase!important;letter-spacing:.35px!important}
+body.v134Ready .brand .v134GenInline strong{font-size:15px!important;line-height:1!important;color:#f6f7f9!important}
+body.v134Ready.simulating .simControls{display:none!important}
+body.v134Ready #homeButton{display:none!important}
+
+/* Pause lineage cards: same information in two compact rows rather than three tall rows. */
+body.v134Ready #v13PauseOverlay .v131PauseCard{
+  min-height:0!important;
+  padding:5px 6px!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  gap:2px 6px!important;
+}
+body.v134Ready #v13PauseOverlay .v131PauseName{grid-column:1;grid-row:1;font-size:8px!important}
+body.v134Ready #v13PauseOverlay .v131PauseCard>b{grid-column:2;grid-row:1;align-self:center;font-size:8px!important;white-space:nowrap;color:#cbd2dc!important}
+body.v134Ready #v13PauseOverlay .v131PauseCard>strong{grid-column:3;grid-row:1;align-self:center;font-size:12px!important}
+body.v134Ready #v13PauseOverlay .v131PauseCheese{grid-column:1;grid-row:2;font-size:8px!important;white-space:nowrap}
+body.v134Ready #v13PauseOverlay .v131PauseCard>small{grid-column:2/4;grid-row:2;align-self:center;font-size:7.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#8e9aab!important}
+body.v134Ready #v13PauseOverlay .v13PauseLineages{gap:4px!important}
+
+/* Richer generation summaries: per-lineage progress, cheese, useful step count and danger deaths. */
+.v134SummaryRows{display:grid;gap:7px;margin-top:4px}
+.v134SpeciesSummary{padding:9px 10px;border-radius:11px;background:#202735;border:1px solid rgba(255,255,255,.08)}
+.v134SummaryHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.v134SummaryHead b{display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:.35px}
+.v134SummaryHead b i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(255,255,255,.35)}
+.v134SpeciesSummary.lineage-white .v134SummaryHead i{background:#fffdf7;border-color:#9c9a94}
+.v134SpeciesSummary.lineage-grey .v134SummaryHead i{background:#909aa8;border-color:#5e6774}
+.v134SpeciesSummary.lineage-black .v134SummaryHead i{background:#171b22;border-color:#aeb7c4}
+.v134SummaryHead strong{font-size:16px}
+.v134SummaryMeta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;color:#b7c0cd;font-size:10px;font-weight:800}
+.v134GoalResult{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.07);color:#82dfc5;font-size:11px}
+
+/* Distinct lineage cards mirror the stronger on-maze mouse contrast. */
+body.v134Ready .lineage-white .v131LiveName i,body.v134Ready .lineage-white .v131PauseName i{background:#fffef8!important;border-color:#747c87!important}
+body.v134Ready .lineage-grey .v131LiveName i,body.v134Ready .lineage-grey .v131PauseName i{background:#909aa8!important;border-color:#4d5664!important}
+body.v134Ready .lineage-black .v131LiveName i,body.v134Ready .lineage-black .v131PauseName i{background:#171b22!important;border-color:#aeb7c4!important}
+
+@media(max-width:699px){
+  body.v134Ready .brand{gap:6px!important}
+  body.v134Ready .brand .version{font-size:11px!important}
+  body.v134Ready .brand .v134GenInline strong{font-size:14px!important}
+  body.v134Ready #v13PauseOverlay .v131PauseCard{padding:4px 5px!important;gap:1px 4px!important}
+  body.v134Ready #v13PauseOverlay .v131PauseName{font-size:7.5px!important}
+  body.v134Ready #v13PauseOverlay .v131PauseCard>b{font-size:7.5px!important}
+  body.v134Ready #v13PauseOverlay .v131PauseCard>strong{font-size:11px!important}
+  body.v134Ready #v13PauseOverlay .v131PauseCheese,body.v134Ready #v13PauseOverlay .v131PauseCard>small{font-size:7px!important}
+  .v134SpeciesSummary{padding:8px}
+  .v134SummaryMeta{gap:7px;font-size:9px}
+}
