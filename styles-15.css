@@ -1,0 +1,49 @@
+/* EvoMaus v1.3 UI refinement: species-first live HUD and a non-blocking pause lab. */
+.v131HiddenStat{display:none!important}
+.v131GenStat{display:flex!important;min-width:58px!important;flex:0 0 auto!important}
+body.v13Ready.simulating .simControls{display:flex!important;align-items:center!important;gap:6px!important;overflow:visible!important;padding-bottom:4px!important}
+
+/* Main live HUD: all useful population information lives on the three lineage cards. */
+body.v13Ready.simulating #v13LiveLineages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:3px 7px 7px;background:var(--panel,#171b24)}
+.v131LiveCard{min-width:0;min-height:52px;border:1px solid rgba(255,255,255,.11);border-radius:12px;background:#222a38;color:#fff;padding:6px 7px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:2px 6px;text-align:left;touch-action:manipulation}
+.v131LiveCard strong{font-size:13px;align-self:center;white-space:nowrap}
+.v131LiveCard small{grid-column:1/-1;color:#d9cf82;font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v131LiveName{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:950;letter-spacing:.45px;color:#b9c2d0}
+.v131LiveName i,.v131PauseName i{width:9px;height:9px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.35)}
+.lineage-white .v131LiveName i,.lineage-white .v131PauseName i{background:#fffdf7;border-color:#a9a69f}
+.lineage-grey .v131LiveName i,.lineage-grey .v131PauseName i{background:#aab1bd;border-color:#747d8a}
+.lineage-black .v131LiveName i,.lineage-black .v131PauseName i{background:#3d4450;border-color:#697382}
+.v131LiveCard.following{border-color:#78dbc1;box-shadow:inset 0 0 0 1px rgba(120,219,193,.28),0 0 12px rgba(120,219,193,.08)}
+body.v13Ready.simulating #v13LiveLineages .v131LiveCard{pointer-events:auto!important;cursor:pointer}
+
+/* Pause is now a lower control drawer, not a full-screen modal. The upper maze remains
+   fully bright and tappable so selecting individual mice is actually practical. */
+#v13PauseOverlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;align-items:flex-end!important}
+#v13PauseOverlay .v13Sheet{max-height:42dvh!important;width:min(720px,100%)!important;border-radius:18px 18px 0 0!important;padding-top:10px!important;background:rgba(23,29,40,.975)!important;box-shadow:0 -10px 30px rgba(0,0,0,.35)!important}
+#v13PauseOverlay .v13SheetHead{position:sticky;top:-10px;z-index:2;background:rgba(23,29,40,.985);padding:2px 0 7px;margin-bottom:5px}
+#v13PauseOverlay .v13SheetHead strong{font-size:18px}
+#v13PauseOverlay .v13SheetHead button{min-width:112px;min-height:38px}
+.v131LegacyRecords{display:none!important}
+
+.v13PauseLineages{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+.v131PauseCard{min-width:0;border:1px solid rgba(255,255,255,.1);border-radius:11px;background:#202735;color:#fff;padding:7px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;gap:2px 6px;text-align:left}
+.v131PauseCard.following{border-color:#78dbc1;box-shadow:inset 0 0 0 1px rgba(120,219,193,.24)}
+.v131PauseName{display:flex;align-items:center;gap:5px;color:#b9c2d0;font-size:9px;font-weight:950;letter-spacing:.4px}
+.v131PauseCard>b{font-size:9px;color:#d7dee8;font-weight:800}
+.v131PauseCard>strong{grid-row:1/3;grid-column:2;align-self:center;font-size:14px}
+.v131PauseCheese{font-size:9px;color:#e5d268;font-weight:850}
+.v131PauseCard small{grid-column:1/-1;color:#8f9cad;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+#v13PauseOverlay .v13Inspector{margin:7px 0;padding:8px 9px}
+#v13PauseOverlay .v13ToggleGrid{margin:7px 0}
+#v13PauseOverlay .v13WideAction{min-height:40px;margin-bottom:7px}
+#v13PauseOverlay .v13Section{padding:6px 0}
+
+@media(max-width:699px){
+  #v13PauseOverlay .v13Sheet{max-height:40dvh!important;padding-left:10px!important;padding-right:10px!important}
+  .v131LiveCard{padding:5px 6px;min-height:50px}
+  .v131LiveCard strong{font-size:12px}.v131LiveCard small{font-size:8px}.v131LiveName{font-size:8px}
+  .v131PauseCard{padding:6px 5px}.v131PauseCard>strong{font-size:12px}.v131PauseName{font-size:8px}.v131PauseCard small{font-size:7.5px}
+  #v13PauseOverlay .v13ToggleGrid{grid-template-columns:1fr 1fr!important}
+  #v13PauseOverlay .v13ToggleGrid label{min-height:38px;padding:6px 7px;font-size:9px}
+}
