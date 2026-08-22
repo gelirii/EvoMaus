@@ -1,0 +1,67 @@
+/* EvoMaus v1.3 UI polish: cleaner maze viewport and bottom experiment toggles. */
+
+/* The old centre-on-start control is no longer part of the play UI. */
+#homeButton{display:none!important}
+
+/* With the experiment toggles removed from the top drawer's normal flow, the drawer
+   naturally ends after the selected-mouse inspector and leaves more maze visible. */
+#v13PauseOverlay .v13ToggleGrid{
+  position:fixed!important;
+  left:7px!important;
+  right:7px!important;
+  bottom:calc(7px + env(safe-area-inset-bottom))!important;
+  width:auto!important;
+  margin:0!important;
+  padding:5px!important;
+  z-index:96!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:5px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:14px!important;
+  background:rgba(23,29,40,.97)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.38)!important;
+  pointer-events:auto!important;
+}
+#v13PauseOverlay .v13ToggleGrid label{
+  min-width:0!important;
+  min-height:40px!important;
+  padding:5px 7px!important;
+  font-size:9px!important;
+  line-height:1.05!important;
+  border-radius:10px!important;
+}
+#v13PauseOverlay .v13ToggleGrid input{
+  width:18px!important;
+  height:18px!important;
+}
+
+/* Resume / Skip / Edit have enough room already; make the labels readable instead
+   of shrinking them to fit an artificially small type size. */
+.v132PauseActions #v13ResumeButton,
+.v132PauseActions #v13SkipButton,
+.v132PauseActions .v133EditTop{
+  font-size:11px!important;
+  letter-spacing:.05px!important;
+}
+
+@media(max-width:699px){
+  #v13PauseOverlay .v13ToggleGrid{
+    left:6px!important;
+    right:6px!important;
+    bottom:calc(6px + env(safe-area-inset-bottom))!important;
+    gap:4px!important;
+    padding:4px!important;
+  }
+  #v13PauseOverlay .v13ToggleGrid label{
+    min-height:38px!important;
+    padding:4px 6px!important;
+    font-size:8.5px!important;
+  }
+  .v132PauseActions #v13ResumeButton,
+  .v132PauseActions #v13SkipButton,
+  .v132PauseActions .v133EditTop{
+    font-size:10.5px!important;
+    padding:0 4px!important;
+  }
+}
