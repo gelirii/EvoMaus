@@ -1,0 +1,3 @@
+/* v1.3 pause inspector: let taps outside the bottom sheet reach the paused maze. */
+#v13PauseOverlay { pointer-events: none; }
+#v13PauseOverlay .v13Sheet { pointer-events: auto; }
