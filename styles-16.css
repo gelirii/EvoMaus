@@ -1,0 +1,43 @@
+/* EvoMaus v1.3 UI refinement: Pause replaces the HUD from the top. */
+
+/* Drop Pause from the top so it physically covers the normal HUD rather than
+   making the user read two interfaces at once. The uncovered maze remains usable. */
+#v13PauseOverlay{align-items:flex-start!important;justify-content:center!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#v13PauseOverlay .v13Sheet{width:100%!important;max-width:none!important;max-height:44dvh!important;border-radius:0 0 18px 18px!important;padding:calc(8px + env(safe-area-inset-top)) 10px 12px!important;background:#171d28!important;box-shadow:0 12px 34px rgba(0,0,0,.42)!important;border-top:0!important;overflow:auto!important}
+#v13PauseOverlay .v13SheetHead{position:static!important;background:transparent!important;padding:0!important;margin:0 0 7px!important;display:flex!important;align-items:center!important;gap:8px!important}
+#v13PauseOverlay .v13SheetHead>div:first-child{min-width:0;flex:1}
+#v13PauseOverlay .v13SheetHead strong{font-size:17px!important}
+#v13PauseOverlay .v13SheetHead span{font-size:10px!important}
+
+.v132PauseActions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.v132PauseActions #v13ResumeButton,.v132SkipSmall{min-width:0!important;min-height:36px!important;height:36px!important;border-radius:10px!important;padding:0 10px!important;margin:0!important;font-size:10px!important;font-weight:900!important;white-space:nowrap}
+.v132SkipSmall{background:#2b3546;color:#f3f6fa;border:1px solid #3d4b61}
+
+/* All three experiment toggles belong to one compact control row. */
+#v13PauseOverlay .v13ToggleGrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin:7px 0!important}
+#v13PauseOverlay .v13ToggleGrid label{min-width:0!important;min-height:38px!important;padding:5px 6px!important;font-size:8px!important;line-height:1.1!important;gap:4px!important}
+#v13PauseOverlay .v13ToggleGrid input{width:17px!important;height:17px!important;flex:0 0 auto}
+
+.v132EditButton{width:100%;min-height:39px;border-radius:10px;background:#273142;color:#fff;border:1px solid #3c4a5f;font-weight:900;margin:0 0 7px}
+.v132LegacyMazeSection{display:none!important}
+
+/* Random generation now clearly belongs to the normal editor, beside Start. */
+.v132RandomEditorAction{display:none;min-height:36px;padding:0 10px;white-space:nowrap}
+body.v132Ready:not(.simulating) .v132RandomEditorAction,body.v132Ready.editing-run .v132RandomEditorAction{display:inline-flex!important;align-items:center;justify-content:center}
+body.v132Ready.simulating .v132RandomEditorAction{display:none!important}
+
+/* The old floating positioning rules must not follow the reused Random Maze control. */
+body.v132Ready .floating #v13RandomEditorButton{display:none!important}
+
+@media(max-width:699px){
+  #v13PauseOverlay .v13Sheet{max-height:46dvh!important;padding-left:7px!important;padding-right:7px!important}
+  .v132PauseActions{gap:4px}
+  .v132PauseActions #v13ResumeButton,.v132SkipSmall{height:34px!important;min-height:34px!important;padding:0 8px!important;font-size:9px!important}
+  #v13PauseOverlay .v13PauseLineages{gap:4px!important}
+  #v13PauseOverlay .v13Inspector{margin:5px 0!important;padding:6px 7px!important}
+  #v13PauseOverlay .v13ToggleGrid{gap:4px!important;margin:5px 0!important}
+  #v13PauseOverlay .v13ToggleGrid label{padding:4px!important;font-size:7.5px!important}
+  .v132EditButton{min-height:36px;margin-bottom:5px}
+  .editorTitleActions{gap:5px!important}
+  .v132RandomEditorAction{font-size:10px!important;padding:0 7px!important}
+}
