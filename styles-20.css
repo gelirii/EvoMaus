@@ -1,0 +1,128 @@
+/* EvoMaus v1.3 editor continuity and information-density pass */
+
+/* Initial editor and suspended-run editor share the same visual hierarchy:
+   brand on the left, Start/Resume on the upper-right, two smaller actions below. */
+body.v135Ready:not(.simulating) .titleRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(176px,46%)!important;
+  align-items:start!important;
+  gap:8px!important;
+}
+body.v135Ready:not(.simulating) .brand{
+  min-width:0!important;
+  padding-top:8px!important;
+  overflow:visible!important;
+}
+body.v135Ready:not(.simulating) .brand strong{
+  font-size:21px!important;
+}
+body.v135Ready:not(.simulating) .brand .version{
+  display:inline!important;
+  visibility:visible!important;
+  opacity:1!important;
+  font-size:11px!important;
+  flex:0 0 auto!important;
+}
+body.v135Ready:not(.simulating) .v135EditorHeaderActions{
+  width:100%!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-rows:auto auto!important;
+  gap:5px!important;
+}
+.v135EditorPrimary,.v135EditorSecondary{width:100%;min-width:0;display:grid;gap:5px}
+.v135EditorPrimary{grid-template-columns:1fr}
+.v135EditorSecondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.v135Ready:not(.simulating) #startButton{
+  width:100%!important;
+  min-width:0!important;
+  height:39px!important;
+  padding:0 8px!important;
+  font-size:14px!important;
+}
+body.v135Ready:not(.simulating) .v135EditorSecondary button{
+  width:100%!important;
+  min-width:0!important;
+  height:32px!important;
+  min-height:32px!important;
+  padding:0 5px!important;
+  border-radius:9px!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+.v135ClearButton{background:#2a3241!important;color:#f3f5f7!important;border:1px solid #343c4c!important}
+body.v135Ready:not(.editing-run):not(.simulating) .v135ResetButton{display:none!important}
+body.v135Ready.editing-run .v135ClearButton{display:none!important}
+body.v135Ready.editing-run .v135ResetButton{display:inline-flex!important;align-items:center;justify-content:center;order:-1}
+body.v135Ready.simulating .editorTitleActions{display:none!important}
+
+/* Population and frozen lineage snapshots are editor status, so anchor them at the
+   bottom of the maze instead of using a full header row. */
+.v135EditorBottom{
+  position:absolute;
+  z-index:7;
+  left:8px;
+  right:8px;
+  bottom:calc(8px + env(safe-area-inset-bottom));
+  pointer-events:none;
+  display:block;
+}
+.v135EditorBottom>*{pointer-events:auto}
+body.v135Ready.simulating .v135EditorBottom{display:none!important}
+.v135EditorBottom .populationBox{
+  width:100%!important;
+  min-width:0!important;
+  height:44px!important;
+  margin:0!important;
+  background:rgba(28,34,45,.96)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.22)!important;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.v135EditorBottom .lineageEditStats{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  flex:none!important;
+  gap:5px!important;
+}
+.v135EditorBottom .lineageEditStat{
+  height:43px!important;
+  background:rgba(28,34,45,.96)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.18)!important;
+}
+
+/* With status removed, the editor toolbar is only the five drawing tools. */
+body.v135Ready:not(.simulating) .editorControls{
+  margin-top:7px!important;
+}
+
+/* The old floating control cluster has no role after Home was removed and Clear moved. */
+body.v135Ready .floating{display:none!important}
+
+@media(max-width:699px){
+  body.v135Ready:not(.simulating) .titleRow{
+    grid-template-columns:minmax(0,1fr) minmax(168px,47%)!important;
+    gap:6px!important;
+  }
+  body.v135Ready:not(.simulating) .brand{
+    gap:5px!important;
+    padding-top:7px!important;
+  }
+  body.v135Ready:not(.simulating) .brand strong{font-size:20px!important;letter-spacing:-.5px!important}
+  body.v135Ready:not(.simulating) .brand .version{font-size:10px!important}
+  body.v135Ready:not(.simulating) #startButton{height:37px!important;font-size:13px!important}
+  body.v135Ready:not(.simulating) .v135EditorSecondary button{height:30px!important;min-height:30px!important;font-size:8.5px!important}
+  .v135EditorBottom{left:7px;right:7px;bottom:calc(7px + env(safe-area-inset-bottom))}
+  .v135EditorBottom .populationBox{height:42px!important}
+  .v135EditorBottom .lineageEditStat{height:40px!important}
+}
+
+@media(max-width:360px){
+  body.v135Ready:not(.simulating) .titleRow{grid-template-columns:minmax(0,1fr) 160px!important}
+  body.v135Ready:not(.simulating) .brand strong{font-size:18px!important}
+  body.v135Ready:not(.simulating) .brand .version{font-size:9px!important}
+  body.v135Ready:not(.simulating) #startButton{font-size:12px!important}
+  body.v135Ready:not(.simulating) .v135EditorSecondary button{font-size:8px!important;padding:0 3px!important}
+}
