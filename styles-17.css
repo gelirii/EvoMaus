@@ -1,0 +1,31 @@
+/* EvoMaus v1.3 UI refinement: three-action pause bar and editor-only reset. */
+
+/* Pause header: title on the left, Resume / Skip / Edit on one horizontal row. */
+#v13PauseOverlay .v13SheetHead{display:grid!important;grid-template-columns:minmax(92px,.8fr) minmax(0,1.45fr)!important;align-items:center!important;gap:7px!important}
+#v13PauseOverlay .v13SheetHead>div:first-child{min-width:0!important}
+.v132PauseActions{display:grid!important;grid-template-columns:1.15fr .82fr .82fr!important;gap:5px!important;min-width:0!important;width:100%!important}
+.v132PauseActions #v13ResumeButton,.v132PauseActions #v13SkipButton,.v132PauseActions .v133EditTop{width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;margin:0!important;padding:0 5px!important;border-radius:10px!important;font-size:9px!important;font-weight:900!important;white-space:nowrap!important}
+.v132PauseActions .v133EditTop{background:#273142;color:#fff;border:1px solid #3c4a5f}
+
+/* The three view/experiment switches are one compact row at every phone width. */
+#v13PauseOverlay .v13ToggleGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
+#v13PauseOverlay .v13ToggleGrid label{min-width:0!important;min-height:35px!important;padding:4px 5px!important;font-size:7.5px!important;line-height:1.05!important}
+#v13PauseOverlay .v13ToggleGrid label span{min-width:0}
+#v13PauseOverlay .v13ToggleGrid input{width:16px!important;height:16px!important}
+
+/* Edit no longer occupies a second full-width row and reset no longer exists in Pause. */
+#v13PauseOverlay .v132EditButton{display:none!important}
+#v13PauseOverlay #v13ResetButton{display:none!important}
+
+/* Reset belongs only to the normal editor alongside Start / Random Maze. */
+body.v133Ready.simulating #stopEditButton{display:none!important}
+body.v133Ready:not(.simulating) #stopEditButton,body.v133Ready.editing-run #stopEditButton{display:inline-flex!important;align-items:center;justify-content:center}
+
+@media(max-width:699px){
+  #v13PauseOverlay .v13SheetHead{grid-template-columns:minmax(82px,.68fr) minmax(0,1.55fr)!important;gap:5px!important}
+  #v13PauseOverlay .v13SheetHead strong{font-size:16px!important}
+  #v13PauseOverlay .v13SheetHead span{font-size:9px!important}
+  .v132PauseActions{gap:4px!important}
+  .v132PauseActions #v13ResumeButton,.v132PauseActions #v13SkipButton,.v132PauseActions .v133EditTop{height:34px!important;min-height:34px!important;font-size:8px!important;padding:0 3px!important}
+  #v13PauseOverlay .v13ToggleGrid label{font-size:7px!important;padding:3px 4px!important}
+}
