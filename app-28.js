@@ -3,7 +3,7 @@
 (() => {
   const ALGERNON = 'algernon';
   const NATURAL = ['white', 'grey', 'black'];
-  const HIDDEN = 10;
+  const HIDDEN = 13;
   const OUTPUTS = 4;
   const CANDIDATES = 16;
   const RECENT_CAP = 24;
@@ -351,7 +351,7 @@
 
     if (!sources.length && existingAlgernon?.genome) {
       const fallback = archiveEntry(existingAlgernon, 'algernon-fallback');
-      sources = [{ entry: fallback, score: 1 };
+      sources = [{ entry: fallback, score: 1 }];
     }
     if (!sources.length) return null;
 
