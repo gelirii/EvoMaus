@@ -1,0 +1,38 @@
+/* EvoMaus v1.3 Algernon + four-lineage UI refinement. */
+
+body.v137Ready.simulating #v13LiveLineages,
+body.v137Ready #v13PauseOverlay .v13PauseLineages{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:4px!important;
+}
+
+.lineage-algernon .v131LiveName i,
+.lineage-algernon .v131PauseName i,
+.lineage-algernon .v134SummaryHead i{
+  background:#b9f2c8!important;
+  border-color:#4fa96d!important;
+}
+.v137AlgernonCard{border-color:rgba(123,211,148,.34)!important}
+.v137AlgernonCard.following{
+  border-color:#32a9ff!important;
+  box-shadow:inset 0 0 0 1px rgba(50,169,255,.30),0 0 12px rgba(50,169,255,.11)!important;
+}
+.lineage-algernon .v131LiveName,.lineage-algernon .v131PauseName{color:#c8f4d3!important}
+.lineage-algernon.v134SpeciesSummary{border-color:rgba(123,211,148,.28)!important;background:#1f2b29!important}
+.v137AlgernonOutcome{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.07);color:#a7b3bd;font-size:11px}
+
+body.v137Ready .v131LiveCard{padding-left:5px!important;padding-right:5px!important}
+body.v137Ready .v131LiveName{font-size:7.6px!important;gap:4px!important;letter-spacing:.28px!important}
+body.v137Ready .v131LiveCard strong{font-size:11px!important}
+body.v137Ready .v131LiveCard small{font-size:7.5px!important}
+body.v137Ready #v13PauseOverlay .v131PauseName{font-size:7px!important;gap:3px!important}
+body.v137Ready #v13PauseOverlay .v131PauseCard>b,
+body.v137Ready #v13PauseOverlay .v131PauseCheese,
+body.v137Ready #v13PauseOverlay .v131PauseCard>small{font-size:6.6px!important}
+body.v137Ready #v13PauseOverlay .v131PauseCard>strong{font-size:10.5px!important}
+
+@media(max-width:390px){
+  body.v137Ready .v131LiveName{font-size:7px!important}
+  body.v137Ready .v131LiveCard strong{font-size:10px!important}
+  body.v137Ready .v131LiveCard small{font-size:7px!important}
+}
